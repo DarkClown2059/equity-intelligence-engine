@@ -133,7 +133,7 @@ Finance/
 ## Installation (Local)
 
 Clone the repository:
-git clone https://github.comYOUR_USERNAMEequity-intelligence-engine.git
+git clone https://github.comDarkClown2059equity-intelligence-engine.git
 cd equity-intelligence-engine
 
 Install dependencies:
