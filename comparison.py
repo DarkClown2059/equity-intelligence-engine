@@ -19,7 +19,19 @@ def _to_positive_float(value):
     return number
 
 
-def _get_pe_ratio(ticker_obj):
+def _latest_positive_value(series):
+    """Return latest positive finite value from a pandas Series-like object."""
+    try:
+        for value in reversed(series.dropna().tolist()):
+            number = _to_positive_float(value)
+            if number is not None:
+                return number
+    except Exception:
+        return None
+    return None
+
+
+def _get_pe_ratio(ticker_obj, income=None):
     """Fetch a best-effort P/E ratio using multiple yfinance sources."""
     info = {}
     try:
@@ -54,6 +66,19 @@ def _get_pe_ratio(ticker_obj):
     except Exception:
         pass
 
+    # Final fallback: use financial-statement EPS with recent close price.
+    if income is not None and "Diluted EPS" in income.columns:
+        try:
+            eps_from_income = _latest_positive_value(income["Diluted EPS"])
+            if eps_from_income is not None:
+                history = ticker_obj.history(period="5d")
+                if not history.empty and "Close" in history:
+                    last_close = _to_positive_float(history["Close"].dropna().iloc[-1])
+                    if last_close is not None:
+                        return last_close / eps_from_income
+        except Exception:
+            pass
+
     return None
 
 
@@ -64,7 +89,7 @@ def analyze_company(ticker):
 
     # ---------- SAFE P/E ----------
     try:
-        pe_ratio = _get_pe_ratio(yf.Ticker(ticker))
+        pe_ratio = _get_pe_ratio(yf.Ticker(ticker), income=income)
     except Exception:
         pe_ratio = None
 

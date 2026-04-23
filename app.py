@@ -71,9 +71,6 @@ if st.button("Analyze"):
 
     st.header(f"Peer Comparison: {', '.join(tickers)}")
 
-    df = compare_companies(tickers)
-    df = rank_companies(df)
-
     # Display raw values without rounding
     st.dataframe(df.style.format(precision=10, na_rep='N/A'))
 
